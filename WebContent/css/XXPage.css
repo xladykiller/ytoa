@@ -1,0 +1,13 @@
+.disable{
+	text-decoration: none;
+	color: grey;
+}
+
+#paging{
+	position: absolute;
+	bottom: 0px;
+}
+
+#page a{
+	padding:0 5px;
+}

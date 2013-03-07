@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
+</head>
+<body>
+<span id="testBtn" style="border: 1px solid black;">click me!</span>
+<input id="bindBtn" type="button" value="bind">
+	<script type="text/javascript">
+		$(function() {
+			$('#bindBtn').bind('click',function(){
+				$('#testBtn').bind('mouseleave',function(){
+					alert('mouseleave');
+				});
+			});
+			$('#testBtn').bind('mouseleave',function(){
+				alert('mouseleave');
+			});
+			$('#testBtn').bind('mouseleave',function(){
+				alert('mouseleave');
+			});
+			$('#testBtn').bind('click',function(){
+				alert('button  click');
+				$(this).unbind('mouseleave');
+			});
+		});
+
+		/* function replace(s){
+		 var t = ['十二月','十一月','十月','九月','八月','七月','六月','五月','四月','三月','二月','一月'];
+		 for(var i = 12;i >= 1;i--){
+		 s = s.replace(t[12-i],i);
+		 }
+		 return s;
+		 } */
+		/* var s = '十二月 9, 2012'; */
+		//s= s.replace(/十月/g,"10");
+		/* s = replace(s); */
+		//alert(s); 
+		//var d = new Date("Dec 3,2012");
+		/* var m = ['Dec','Nov','Oct','Sep','Aug','Jul','Jun','May','Apr','Mar','Feb','Jan'];
+		 for(var i = 0;i < m.length;i++){
+		 var d = new Date(m[i]+" 3,2012");
+		 document.write(d.toString()+"<br />");
+		 } */
+		//alert(d.toString());
+	</script>
+</body>
+</html>

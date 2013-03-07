@@ -1,0 +1,173 @@
+//2
+
+var bindFunction = {};
+
+// 删除案例
+bindFunction.delExample = function() {
+	$("input[name=del]").bind(
+			"click",
+			function() {
+				if (window.confirm("确定删除？")) {
+					// 读取id
+					var id = $(this).attr('delExample');
+					$.post("XXExample", {
+						id : id,
+						action:"del"
+					}, function(data) {
+						if (data == 1) {
+							alert("删除成功");
+							// 移除window数据
+							$(window).data("" + id, null);
+							// 刷新
+							$("#searchExampleBtn").trigger('click',
+									[ page.pageNow ]);
+						} else if(data == 0){
+							alert("删除失败");
+						} else if(data == 2){
+							window.location.href="result/noPermission.jsp";
+							return;
+						}
+					});
+				}
+			});
+};
+
+// 弹出修改页面
+bindFunction.showUpdateExample = function() {
+	$("input[name=update]").bind("click", function() {
+		// 读取id
+		var id = $(this).attr("updateExample");
+		// 根据id读取记录
+		var o = $(window).data("" + id);
+		// 把id赋给updateExampleBtn（这个按钮就可以根据id操作数据库）
+		$("#updateExampleBtn").attr("exampleid", id);
+		// 赋值记录值
+		$("#updateExampleTitle").val(o.title);
+		$("#updateExampleAuthor").val(o.author);
+		CKEDITOR.instances.updateExampleContent.setData(o.content);
+		// 隐藏搜索，显示更新
+		$("#searchExample").hide();
+		$("#updateExample").show();
+	});
+};
+
+// 显示列表
+var addrow = function(o, n) {
+	var $row = $('<tr><td>'
+			+ n
+			+ '</td><td style="text-align:left;text-indent:2em;">'
+			+ o.title
+			+ '</td><td>'
+			+ replace(o.addtime)
+			+ '</td><td>'
+			+ replaceNull(o.author)
+			+ '</td><td><input type="button"  name="del" value="删除" delExample="'
+			+ o.id
+			+ '"></td><td><input type="button" name="update" value="修改" updateExample="'
+			+ o.id + '"></td></tr>');
+	$("#searchExampleTable tbody").append($row);
+};
+
+$(function() {
+	// 点击查询
+	$("#searchExampleBtn").bind("click", function(event, num) {
+
+		// 清空列表和分页
+		$("#searchExampleTable tbody tr").remove();
+//		$("#page a").remove();
+		// 读取查询字段
+		var searchExampleTitle = $.trim($("#searchExampleTitle").val());
+		// 返回查询结果
+		$.post("XXExample", {
+			searchExampleTitle : searchExampleTitle,
+			action:"search"
+		}, function(data) {
+			if(data.length == 1){
+				if(data[0].ret != null && data[0].ret != undefined){
+					window.location.href="result/noPermission.jsp";
+					return;
+				}
+			}
+			// 调用XXutils.js，初始化分页
+			page.init(data.length, "XXExample", {
+				searchExampleTitle : searchExampleTitle,
+				action:"searchByPage"
+			}, function() {
+				bindFunction.delExample();
+				bindFunction.showUpdateExample();
+			}, function(data) {
+				$("#searchExampleTable tbody tr").remove();
+				for ( var i = 0; i < page.pageSize; i++) {
+					var o = data[i];
+					if (o == null)
+						break;
+					addrow(o, i + 1);
+					$(window).data("" + o.id, o);
+				}
+			});// end page.init
+			// 显示列表
+			for ( var i = 0; i < page.pageSize; i++) {
+				var o = data[i];
+				if (o == null)
+					break;
+				addrow(o, i + 1);
+				$(window).data("" + o.id, o);
+			}
+
+			bindFunction.delExample();
+			bindFunction.showUpdateExample();
+			
+			//删除修改后回到当前页
+			if (num != null && num != undefined && num != "") {
+					page.switchPage(num);				
+			}
+
+		}, 'json');// end post("XXSearchExample")
+	});// end查询============================================================================
+
+	$("#searchExampleBtn").click();
+
+	// 返回
+	$("#returnBtn").bind("click", function() {
+		$("#searchExample").show();
+		$("#updateExample").hide();
+	});
+
+	// 提交修改
+	$("#updateExampleBtn").bind("click", function() {
+		// 从updateExampleBtn读取id
+		var id = $(this).attr("exampleid");
+		var title = $.trim($("#updateExampleTitle").val());
+		var author = $.trim($("#updateExampleAuthor").val());
+		var content = CKEDITOR.instances.updateExampleContent.getData();
+		var o = $(window).data("" + id);
+		if (title == "") {
+			alert("请填写标题");
+			return;
+		}
+		if (title == o.title && author == o.author && content == o.content) {
+			alert("未修改");
+			return;
+		}
+		$.post("XXExample", {
+			id : id,
+			title : title,
+			author : author,
+			content : content,
+			action:"update"
+		}, function(data) {
+			if (data == 1) {
+				alert("修改成功");
+				$(window).data("" + id, null);
+				$("#searchExampleBtn").trigger('click', [ page.pageNow ]);
+				$("#returnBtn").click();
+			} else if(data == 0){
+				alert("修改失败");
+			}else if(data == 2){
+				window.location.href="result/noPermission.jsp";
+				return;
+			}
+		});
+	});
+
+});
